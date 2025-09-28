@@ -1,0 +1,153 @@
+<!-- agent-dashboard.component.html -->
+<div class="agent-dashboard">
+  <div class="header">
+    <h2>Tableau de bord Agent</h2>
+    <p>Gestion des réclamations et demandes d'adhésion</p>
+  </div>
+
+  <!-- Navigation par onglets -->
+  <div class="tabs">
+    <button class="tab-btn" [class.active]="activeTab === 'reclamations'" 
+            (click)="setActiveTab('reclamations')">
+      Réclamations ({{ reclamations.length }})
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'adhesions'" 
+            (click)="setActiveTab('adhesions')">
+      Demandes d'adhésion ({{ demandesAdhesion.length }})
+    </button>
+  </div>
+
+  <!-- Contenu des onglets -->
+  <div *ngIf="activeTab === 'reclamations'">
+    <div class="reclamations-list">
+      <h3>Réclamations à traiter</h3>
+      
+      <div *ngIf="isLoading" class="loading">Chargement...</div>
+
+      <div *ngIf="!isLoading && reclamations.length === 0" class="no-data">
+        <p>Aucune réclamation à traiter</p>
+      </div>
+
+      <div *ngIf="!isLoading && reclamations.length > 0" class="reclamations-grid">
+        <div *ngFor="let reclamation of reclamations" class="reclamation-card">
+          <div class="card-header">
+            <h4>Réclamation #{{ reclamation.ReclamationId }}</h4>
+            <span class="badge" [ngClass]="{
+              'badge-warning': reclamation.Statut === 0,
+              'badge-info': reclamation.Statut === 1,
+              'badge-success': reclamation.Statut === 2
+            }">
+              {{ getStatutText(reclamation.Statut) }}
+            </span>
+          </div>
+          
+          <div class="card-body">
+            <p><strong>Type:</strong> {{ getTypeText(reclamation.Type) }}</p>
+            <p><strong>Date:</strong> {{ reclamation.DateCreation | date:'dd/MM/yyyy' }}</p>
+            <p><strong>Adhérent ID:</strong> {{ reclamation.AdherentId }}</p>
+            
+            <div class="card-actions">
+              <button class="btn btn-primary btn-sm" (click)="traiterReclamation(reclamation.ReclamationId)">
+                Traiter
+              </button>
+              
+              <button *ngIf="reclamation.Type === 0" class="btn btn-info btn-sm"
+                      [routerLink]="['/agent/assigner', reclamation.ReclamationId]">
+                Demander visite
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+ <!-- agent-dashboard.component.html -->
+<div *ngIf="activeTab === 'adhesions'">
+  <div class="adhesions-list">
+    <h3>Demandes d'adhésion</h3>
+    
+    <!-- Filtres par statut -->
+    <div class="filtres">
+      <button class="btn btn-outline-secondary btn-sm" 
+              [class.active]="filtreStatut === null"
+              (click)="filtrerParStatut(null)">
+        Toutes ({{ demandesAdhesion.length }})
+      </button>
+      <button class="btn btn-outline-warning btn-sm" 
+              [class.active]="filtreStatut === 0"
+              (click)="filtrerParStatut(0)">
+        En attente ({{ getNombreDemandesParStatut(0) }})
+      </button>
+      <button class="btn btn-outline-info btn-sm" 
+              [class.active]="filtreStatut === 1"
+              (click)="filtrerParStatut(1)">
+        En traitement ({{ getNombreDemandesParStatut(1) }})
+      </button>
+      <button class="btn btn-outline-success btn-sm" 
+              [class.active]="filtreStatut === 2"
+              (click)="filtrerParStatut(2)">
+        Validées ({{ getNombreDemandesParStatut(2) }})
+      </button>
+      <button class="btn btn-outline-danger btn-sm" 
+              [class.active]="filtreStatut === 3"
+              (click)="filtrerParStatut(3)">
+        Rejetées ({{ getNombreDemandesParStatut(3) }})
+      </button>
+    </div>
+    
+    <div *ngIf="isLoading" class="loading">Chargement...</div>
+
+    <div *ngIf="!isLoading && demandesFiltrees.length === 0" class="no-data">
+      <p>Aucune demande d'adhésion {{ getTexteFiltre() }}</p>
+    </div>
+
+    <div *ngIf="!isLoading && demandesFiltrees.length > 0" class="adhesions-grid">
+      <div *ngFor="let demande of demandesFiltrees" class="adhesion-card">
+        <div class="card-header">
+          <h4>Demande d'adhésion #{{ demande.DemandeAdhesionId }}</h4>
+          <span class="badge" [ngClass]="{
+            'badge-warning': demande.Statut === 0,
+            'badge-info': demande.Statut === 1,
+            'badge-success': demande.Statut === 2,
+            'badge-danger': demande.Statut === 3
+          }">
+            {{ getStatutAdhesionText(demande.Statut) }}
+          </span>
+        </div>
+        
+        <div class="card-body">
+          <p><strong>Adhérent ID:</strong> {{ demande.AdherentId }}</p>
+          <p><strong>Plan santé:</strong> {{ getPlanSanteText(demande.PlanSanteId) }}</p>
+          <p><strong>Date:</strong> {{ demande.DateCreation | date:'dd/MM/yyyy' }}</p>
+          <p><strong>Agent:</strong> {{ demande.AgentId ? 'Assigné (' + demande.AgentId + ')' : 'Non assigné' }}</p>
+          <p><strong>Cotisation:</strong> {{ demande.CotisationId ? 'Calculée' : 'À calculer' }}</p>
+          
+          <div class="card-actions">
+            <!-- Boutons selon le statut -->
+            <button *ngIf="demande.Statut === 0" class="btn btn-primary btn-sm" 
+                    (click)="traiterDemandeAdhesion(demande.DemandeAdhesionId)">
+              Prendre en charge
+            </button>
+            
+            <button *ngIf="demande.Statut === 1 && !demande.CotisationId" 
+                    class="btn btn-success btn-sm" 
+                    (click)="calculerCotisation(demande.DemandeAdhesionId)">
+              Calculer cotisation
+            </button>
+            
+            <button *ngIf="demande.CotisationId" class="btn btn-info btn-sm"
+                    (click)="voirCotisation(demande.DemandeAdhesionId)">
+              Voir cotisation
+            </button>
+            
+            <button *ngIf="demande.Statut === 1" class="btn btn-warning btn-sm"
+                    (click)="validerDemande(demande.DemandeAdhesionId)">
+              Valider demande
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

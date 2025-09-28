@@ -1,0 +1,86 @@
+<div class="rapport-medical-container">
+  <div class="header">
+    <h3>Rapport Médical</h3>
+    <p>Demande de visite #{{ demandeId }}</p>
+    <p class="subtitle">Rédigez le rapport médical suite à la visite de contrôle</p>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <div class="spinner-border text-primary" role="status">
+      <span class="sr-only">Chargement...</span>
+    </div>
+    <p>Enregistrement du rapport...</p>
+  </div>
+
+  <div *ngIf="!isLoading" class="rapport-form">
+    <form [formGroup]="rapportForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="conclusion">Conclusion médicale *</label>
+        <textarea 
+          formControlName="conclusion" 
+          class="form-control" 
+          id="conclusion" 
+          rows="8" 
+          placeholder="Rédigez ici les observations, diagnostics et conclusions de la visite médicale..."
+          [class.is-invalid]="rapportForm.get('conclusion')?.invalid && rapportForm.get('conclusion')?.touched">
+        </textarea>
+        
+        <div *ngIf="rapportForm.get('conclusion')?.invalid && rapportForm.get('conclusion')?.touched" 
+             class="invalid-feedback">
+          <div *ngIf="rapportForm.get('conclusion')?.errors?.['required']">
+            La conclusion médicale est obligatoire
+          </div>
+          <div *ngIf="rapportForm.get('conclusion')?.errors?.['minlength']">
+            La conclusion doit contenir au moins 10 caractères
+          </div>
+        </div>
+
+        <small class="form-text text-muted">
+          Incluez les observations, diagnostics, recommandations et toute information médicale pertinente.
+        </small>
+      </div>
+
+      <div class="form-guide">
+        <h5>Guide de rédaction :</h5>
+        <ul>
+          <li>📋 <strong>Observations</strong> : État général du patient, signes vitaux</li>
+          <li>🔍 <strong>Examens réalisés</strong> : Tests, analyses, imagerie</li>
+          <li>🏥 <strong>Diagnostic</strong> : Conclusions médicales</li>
+          <li>💊 <strong>Traitement</strong> : Médicaments prescrits, soins recommandés</li>
+          <li>📅 <strong>Suivi</strong> : Recommandations pour le suivi médical</li>
+        </ul>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-success" [disabled]="!rapportForm.valid || isLoading">
+          <i class="nc-icon nc-check-2"></i>
+          <span *ngIf="!isLoading">Enregistrer le rapport</span>
+          <span *ngIf="isLoading">
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Enregistrement...
+          </span>
+        </button>
+
+        <button type="button" class="btn btn-outline-secondary" (click)="rapportForm.reset()">
+          <i class="nc-icon nc-refresh-02"></i>
+          Effacer
+        </button>
+
+        <button type="button" class="btn btn-secondary" routerLink="/agent">
+          <i class="nc-icon nc-minimal-left"></i>
+          Retour au tableau de bord
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="rapport-preview" *ngIf="rapportForm.get('conclusion')?.value">
+    <h5>Aperçu du rapport :</h5>
+    <div class="preview-content">
+      <p>{{ rapportForm.get('conclusion')?.value }}</p>
+    </div>
+    <small class="text-muted">
+      Date de création : {{ today | date:'dd/MM/yyyy à HH:mm' }}
+    </small>
+  </div>
+</div>

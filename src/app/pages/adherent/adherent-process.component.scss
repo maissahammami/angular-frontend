@@ -1,0 +1,263 @@
+.adherent-process-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+
+  .header {
+    text-align: center;
+    margin-bottom: 30px;
+
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+  }
+
+  .progress-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+
+    .progress-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      flex: 1;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 15px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #ddd;
+        z-index: 1;
+      }
+
+      &:first-child::before {
+        left: 50%;
+      }
+
+      &:last-child::before {
+        right: 50%;
+      }
+
+      .step-number {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #ddd;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 5px;
+        position: relative;
+        z-index: 2;
+      }
+
+      .step-label {
+        font-size: 12px;
+        color: #666;
+      }
+
+      &.active {
+        .step-number {
+          background-color: #007bff;
+        }
+
+        .step-label {
+          color: #007bff;
+          font-weight: bold;
+        }
+      }
+
+      &.completed {
+        .step-number {
+          background-color: #28a745;
+        }
+      }
+    }
+  }
+
+  .etape-container {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+
+    h3 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+
+      label {
+        font-weight: bold;
+        color: #555;
+      }
+
+      .form-control {
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        padding: 10px;
+        width: 100%;
+
+        &:focus {
+          border-color: #007bff;
+          box-shadow: 0 0 5px rgba(0,123,255,0.3);
+        }
+      }
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+
+      &-primary {
+        background-color: #007bff;
+        color: white;
+
+        &:hover {
+          background-color: #0056b3;
+        }
+
+        &:disabled {
+          background-color: #6c757d;
+          cursor: not-allowed;
+        }
+      }
+
+      &-success {
+        background-color: #28a745;
+        color: white;
+
+        &:hover {
+          background-color: #1e7e34;
+        }
+      }
+    }
+
+    .summary {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+
+      h4 {
+        margin-bottom: 15px;
+        color: #495057;
+      }
+
+      p {
+        margin: 5px 0;
+        color: #6c757d;
+      }
+    }
+
+    .confirmation {
+      text-align: center;
+
+      h3 {
+        color: #28a745;
+        margin-bottom: 20px;
+      }
+
+      .confirmation-details {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        text-align: left;
+
+        h4 {
+          color: #495057;
+          margin-bottom: 15px;
+        }
+
+        p {
+          margin: 8px 0;
+          color: #6c757d;
+        }
+      }
+    }
+  }
+
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: #007bff;
+    font-size: 18px;
+  }
+
+  .alert {
+    padding: 15px;
+    border-radius: 4px;
+    margin-top: 20px;
+
+    &-danger {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+  }
+}.mode-toggle {
+  text-align: center;
+  margin: 20px 0;
+  
+  .btn {
+    margin: 5px;
+  }
+}
+
+.adherent-form {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  
+  h4 {
+    margin-bottom: 20px;
+    color: #495057;
+  }
+}
+.facture-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-family: Arial, sans-serif;
+}
+
+.facture-table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+.facture-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+}
+
+.text-success {
+  color: green;
+}
+
+.text-warning {
+  color: orange;
+}
+
+.table-container {
+  margin-top: 20px;
+  overflow-x: auto;
+}

@@ -1,0 +1,44 @@
+<div class="reclamation-form-integrated">
+  <h4>Déposer une Réclamation</h4>
+  
+  <form [formGroup]="reclamationForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="type">Type de Réclamation *</label>
+      <select formControlName="Type" class="form-control" id="type" required>
+        <option value="">Sélectionnez un type</option>
+        <option value="0">Visite de contrôle</option>
+        <option value="1">Problème de paiement</option>
+        <option value="2">Problème de facturation</option>
+        <option value="3">Autre problème</option>
+      </select>
+    </div>
+
+    <!-- Champs supplémentaires si nécessaires -->
+    <div class="form-group" *ngIf="reclamationForm.value.Type === '3'">
+      <label for="description">Description détaillée</label>
+      <textarea formControlName="Description" class="form-control" id="description" 
+                rows="3" placeholder="Décrivez votre problème..."></textarea>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-success" [disabled]="!reclamationForm.valid || isLoading">
+        <span *ngIf="!isLoading">📨 Déposer la Réclamation</span>
+        <span *ngIf="isLoading">
+          <span class="spinner-border spinner-border-sm" role="status"></span>
+          Envoi en cours...
+        </span>
+      </button>
+    </div>
+  </form>
+
+  <!-- Debug info -->
+  <div class="debug-info" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+    <h6>Debug Information:</h6>
+    <p><strong>Formulaire valide:</strong> {{ reclamationForm.valid }}</p>
+    <p><strong>AdherentId:</strong> {{ adherentId }}</p>
+    <!-- <p><strong>Type sélectionné:</strong> {{ reclamationForm.value.Type }}</p> -->
+    <!-- <p><strong>Description:</strong> {{ reclamationForm.value.Description }}</p> -->
+
+    <!-- <p><strong>Valeurs:</strong> {{ reclamationForm.value }}</p> -->
+  </div>
+</div>

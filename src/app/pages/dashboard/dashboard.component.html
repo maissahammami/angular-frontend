@@ -1,0 +1,218 @@
+<div class="container-fluid">
+  <div class="row">
+    <!-- Statistics Cards -->
+    <div class="col-lg-3 col-md-6 col-sm-6">
+      <div class="card card-stats">
+        <div class="card-header card-header-warning card-header-icon">
+          <div class="card-icon">
+            <i class="material-icons">people</i>
+          </div>
+          <p class="card-category">Total Adhérents</p>
+          <h3 class="card-title">{{ getTotalAdherents() }}</h3>
+        </div>
+        <div class="card-footer">
+          <div class="stats">
+            <i class="material-icons">date_range</i> Dernière mise à jour
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 col-sm-6">
+      <div class="card card-stats">
+        <div class="card-header card-header-success card-header-icon">
+          <div class="card-icon">
+            <i class="material-icons">person_add</i>
+          </div>
+          <p class="card-category">Nouveaux ce mois</p>
+          <h3 class="card-title">{{ getNewAdherentsThisMonth() }}</h3>
+        </div>
+        <div class="card-footer">
+          <div class="stats">
+            <i class="material-icons">update</i> Just Updated
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add more statistics cards as needed -->
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <!-- Adherent Management Section -->
+      <div class="card">
+        <div class="card-header card-header-primary">
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <h4 class="card-title">Gestion des Adhérents</h4>
+              <p class="card-category">Liste de tous les adhérents</p>
+            </div>
+            <div class="col-md-6 text-right">
+              <button class="btn btn-primary btn-sm" (click)="showCreateAdherent()">
+                <i class="material-icons">add</i> Nouvel Adhérent
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <!-- Search Bar -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <div class="form-group">
+                <input type="text" class="form-control" placeholder="Rechercher un adhérent..." 
+                       [(ngModel)]="searchTerm" (input)="filterAdherents()">
+              </div>
+            </div>
+          </div>
+
+          <!-- Adherent Form -->
+          <div *ngIf="showAdherentForm" class="card mb-4">
+            <div class="card-header">
+              <h4 class="card-title">{{ isEditMode ? 'Modifier' : 'Créer' }} un Adhérent</h4>
+            </div>
+            <div class="card-body">
+              <form [formGroup]="adherentForm" (ngSubmit)="onSubmitAdherent()">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="bmd-label-floating">Prénom *</label>
+                      <input type="text" class="form-control" formControlName="prenom">
+                      <div *ngIf="adherentForm.get('prenom')?.invalid && adherentForm.get('prenom')?.touched" 
+                           class="text-danger">
+                        Le prénom est requis (min. 2 caractères)
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="bmd-label-floating">Nom *</label>
+                      <input type="text" class="form-control" formControlName="nom">
+                      <div *ngIf="adherentForm.get('nom')?.invalid && adherentForm.get('nom')?.touched" 
+                           class="text-danger">
+                        Le nom est requis (min. 2 caractères)
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="bmd-label-floating">Email *</label>
+                      <input type="email" class="form-control" formControlName="email">
+                      <div *ngIf="adherentForm.get('email')?.invalid && adherentForm.get('email')?.touched" 
+                           class="text-danger">
+                        Email invalide
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="bmd-label-floating">Téléphone</label>
+                      <input type="tel" class="form-control" formControlName="telephone">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="bmd-label-floating">Date d'Inscription *</label>
+                      <input type="date" class="form-control" formControlName="dateInscription">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row mt-3">
+                  <div class="col-md-12">
+                    <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+                      {{ isLoading ? 'En cours...' : (isEditMode ? 'Modifier' : 'Créer') }}
+                    </button>
+                    <button type="button" class="btn btn-secondary ml-2" (click)="onCancel()">
+                      Annuler
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Adherents List -->
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="text-primary">
+                <tr>
+                  <th>ID</th>
+                  <th>Prénom</th>
+                  <th>Nom</th>
+                  <th>Email</th>
+                  <th>Téléphone</th>
+                  <th>Date Inscription</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let adherent of filteredAdherents">
+                  <td>{{ adherent.AdherentId }}</td>
+                  <td>{{ adherent.Prenom }}</td>
+                  <td>{{ adherent.Nom }}</td>
+                  <td>{{ adherent.Email }}</td>
+                  <td>{{ adherent.Telephone || 'N/A' }}</td>
+                  <td>{{ adherent.DateInscription | date:'dd/MM/yyyy' }}</td>
+                  <td>
+                    <div class="btn-group">
+                      <button class="btn btn-info btn-sm mr-1" (click)="showEditAdherent(adherent)">
+                        <i class="material-icons">edit</i>
+                      </button>
+                      <button class="btn btn-danger btn-sm" (click)="deleteAdherent(adherent.adherentId!)">
+                        <i class="material-icons">delete</i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div *ngIf="filteredAdherents.length === 0 && !isLoading" class="text-center mt-4">
+            <p>Aucun adhérent trouvé</p>
+          </div>
+
+          <div *ngIf="isLoading" class="text-center">
+            <div class="spinner-border" role="status">
+              <span class="sr-only">Chargement...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Additional dashboard content can go here -->
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header card-header-info">
+          <h4 class="card-title">Évolution des adhérents</h4>
+        </div>
+        <div class="card-body">
+          <!-- Chart or additional statistics can go here -->
+          <p>Graphique d'évolution des adhérents...</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header card-header-success">
+          <h4 class="card-title">Activité récente</h4>
+        </div>
+        <div class="card-body">
+          <!-- Recent activity can go here -->
+          <p>Dernières inscriptions...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,64 @@
+<div class="assigner-medecin-container">
+  <div class="header">
+    <h3>Assigner un Médecin Contrôleur</h3>
+    <p>Réclamation #{{ demandeId }}</p>
+    <small *ngIf="!apiConnected" class="text-warning">
+      <!-- ⚠️ Backend non connecté - Mode simulation -->
+    </small>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <div class="spinner-border text-primary" role="status">
+      <span class="sr-only">Chargement...</span>
+    </div>
+    <p>Assignation en cours...</p>
+  </div>
+
+  <div *ngIf="!isLoading" class="assigner-form">
+    <form [formGroup]="assignerForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="controleurId">Sélectionner un médecin contrôleur *</label>
+        <select formControlName="controleurId" class="form-control" id="controleurId">
+          <option value="">Choisir un médecin...</option>
+          <option *ngFor="let medecin of medecins" [value]="medecin.ControleurMedicalId">
+            Dr. {{ medecin.Nom }} - {{ medecin.Specialite }} ({{ medecin.NumeroOrdre }})
+          </option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="!assignerForm.valid">
+          Assigner le médecin
+        </button>
+
+        <!-- Bouton de test sans backend -->
+        <button type="button" class="btn btn-info" (click)="assignerMock()" 
+                *ngIf="!apiConnected">
+          Tester l'interface (simulation)
+        </button>
+
+        <button type="button" class="btn btn-secondary" routerLink="/agent">
+          Retour au tableau de bord
+        </button>
+      </div>
+    </form>
+
+    <div class="medecins-list" *ngIf="medecins.length > 0">
+      <h5>Médecins disponibles ({{ medecins.length }})</h5>
+      <div class="medecin-card" *ngFor="let medecin of medecins">
+        <div class="medecin-info">
+          <strong>Dr. {{ medecin.Nom }}</strong>
+          <span class="specialite">{{ medecin.Specialite }}</span>
+          <span class="numero-ordre">N° ordre: {{ medecin.NumeroOrdre }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="medecins.length === 0 && !isLoading" class="no-medecins">
+    <div class="alert alert-warning">
+      <h4>Aucun médecin contrôleur disponible</h4>
+      <p>Veuillez contacter l'administrateur pour ajouter des médecins contrôleurs.</p>
+    </div>
+  </div>
+</div>

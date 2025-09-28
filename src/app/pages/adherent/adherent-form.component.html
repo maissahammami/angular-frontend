@@ -1,0 +1,34 @@
+<div class="adherent-form">
+  <h4>Créer un nouvel adhérent</h4>
+  
+  <form [formGroup]="adherentForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="prenom">Prénom *</label>
+      <input type="text" formControlName="Prenom" class="form-control" id="prenom">
+    </div>
+
+    <div class="form-group">
+      <label for="nom">Nom *</label>
+      <input type="text" formControlName="Nom" class="form-control" id="nom">
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email *</label>
+      <input type="email" formControlName="Email" class="form-control" id="email">
+    </div>
+
+    <div class="form-group">
+      <label for="telephone">Téléphone *</label>
+      <input type="tel" formControlName="Telephone" class="form-control" id="telephone">
+    </div>
+
+    <div class="form-group">
+      <label for="dateNaissance">Date de naissance *</label>
+      <input type="date" formControlName="DateNaissance" class="form-control" id="dateNaissance">
+    </div>
+
+    <button type="submit" class="btn btn-success" [disabled]="!adherentForm.valid">
+      Créer l'adhérent
+    </button>
+  </form>
+</div>

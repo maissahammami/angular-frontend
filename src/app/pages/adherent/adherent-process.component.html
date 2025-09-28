@@ -1,0 +1,308 @@
+<div class="adherent-process-container">
+  <div class="header">
+    <h2>Processus d'Adhésion</h2>
+    <div class="progress-bar">
+      <div class="progress-step" [class.active]="etapeActuelle >= 1" [class.completed]="etapeActuelle > 1">
+        <span class="step-number">1</span>
+        <span class="step-label">Sélection</span>
+      </div>
+      <div class="progress-step" [class.active]="etapeActuelle >= 2" [class.completed]="etapeActuelle > 2">
+        <span class="step-number">2</span>
+        <span class="step-label">Cotisation</span>
+      </div>
+      <div class="progress-step" [class.active]="etapeActuelle >= 3" [class.completed]="etapeActuelle > 3">
+        <span class="step-number">3</span>
+        <span class="step-label">Facture</span>
+      </div>
+      <div class="progress-step" [class.active]="etapeActuelle >= 4" [class.completed]="etapeActuelle > 4">
+        <span class="step-number">4</span>
+        <span class="step-label">Paiement</span>
+      </div>
+      <div class="progress-step" [class.active]="etapeActuelle >= 5">
+        <span class="step-number">5</span>
+        <span class="step-label">Confirmation</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Étape 1: Sélection -->
+<!-- Étape 1: Sélection -->
+<div *ngIf="etapeActuelle === EtapeProcess.SelectionAdherent" class="etape-container">
+  <h3>Sélection de l'Adhérent et du Plan de Santé</h3>
+  
+  <div class="mode-toggle" style="margin-bottom: 20px;">
+    <button type="button" class="btn btn-outline-primary" 
+            (click)="toggleModeCreation()">
+      {{ modeCreationAdherent ? '← Retour à la sélection' : '+ Créer un nouvel adhérent' }}
+    </button>
+  </div>
+
+  <!-- Formulaire de création -->
+  <div *ngIf="modeCreationAdherent">
+    <app-adherent-form (adherentCree)="onAdherentCree($event)"></app-adherent-form>
+  </div>
+
+  <!-- Formulaire de sélection -->
+  <div *ngIf="!modeCreationAdherent">
+    <form [formGroup]="selectionForm" (ngSubmit)="demarrerProcessus()">
+      <div class="form-group">
+        <label for="adherentId">Adhérent *</label>
+        <select formControlName="adherentId" class="form-control" id="adherentId">
+          <option value="">Sélectionnez un adhérent</option>
+          <option *ngFor="let adherent of adherents" [value]="adherent.AdherentId">
+            {{ adherent.Prenom }} {{ adherent.Nom }} - {{ adherent.Email }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="planSanteId">Plan de Santé *</label>
+        <select formControlName="planSanteId" class="form-control" id="planSanteId">
+          <option value="">Sélectionnez un plan</option>
+          <option *ngFor="let plan of plansSante" [value]="plan.PlanSanteId">
+            {{ plan.Libelle }}
+          </option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="!selectionForm.valid || isLoading">
+        {{ isLoading ? 'Chargement...' : 'Démarrer le processus' }}
+      </button>
+    </form>
+  </div>
+</div>
+    <!-- Étape 2: Calcul de cotisation -->
+<div *ngIf="etapeActuelle === EtapeProcess.CalculCotisation" style="background: #f0f0f0; padding: 10px; margin: 10px 0;">
+  <h4>Debug:</h4>
+  <p>Etape: {{etapeActuelle}}</p>
+  <p>Demande: {{demandeAdhesion | json}}</p>
+  <!-- CORRECTION ICI : -->
+  <p>Demande ID: {{demandeAdhesion?.DemandeAdhesionId}}</p>
+</div>
+    <div *ngIf="etapeActuelle === EtapeProcess.CalculCotisation" class="etape-container">
+      <h3>Calcul de la Cotisation</h3>
+      <div *ngIf="isLoading" class="loading">Calcul en cours...</div>
+    </div>
+
+    <!-- Étape 3: Génération facture -->
+     <div *ngIf="etapeActuelle === EtapeProcess.GenerationFacture" style="background: #f0f0f0; padding: 10px; margin: 10px 0;">
+  <h4>Debug Cotisation:</h4>
+  <p>Etape: {{etapeActuelle}}</p>
+  <p>Cotisation: {{cotisation | json}}</p>
+  <!-- CORRECTION ICI : -->
+  <p>Cotisation ID: {{cotisation?.CotisationId}}</p>
+</div>
+    <div *ngIf="etapeActuelle === EtapeProcess.GenerationFacture" class="etape-container">
+      <h3>Génération de la Facture</h3>
+      <div *ngIf="isLoading" class="loading">Génération de la facture...</div>
+    </div>
+<!-- Étape 4: Paiement -->
+<div *ngIf="etapeActuelle === EtapeProcess.Paiement" class="etape-container">
+  <h3>Facture</h3>
+  
+  <div class="summary">
+    <h4>Récapitulatif</h4>
+    <p><strong>Adhérent:</strong> {{ adherentSelectionne?.Nom }} {{ adherentSelectionne?.Prenom }}</p>
+    <p><strong>Plan:</strong> {{ planSelectionne?.Libelle }}</p>
+    <p><strong>Numéro de facture:</strong> {{ facture?.Numero }}</p>
+    <p><strong>Date de création:</strong> {{ facture?.DateEmission | date:'dd/MM/yyyy' }}</p>
+    <p><strong>Date d'échéance:</strong> {{ facture?.DateEcheance | date:'dd/MM/yyyy' }}</p>
+    <p><strong>Statut:</strong> 
+      <span [ngClass]="{
+        'text-success': facture?.Statut === 2, 
+        'text-warning': facture?.Statut === 0 || facture?.Statut === 1
+      }">
+        {{ getStatutFactureText(facture?.Statut) }}
+      </span>
+    </p>
+    
+    <!-- Tableau des détails de la facture -->
+    <div class="table-container" style="margin-top: 20px;">
+      <table class="facture-table" style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+        <thead>
+          <tr style="background-color: #f5f5f5;">
+            <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Désignation</th>
+            <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">Qté</th>
+            <th style="border: 1px solid #ddd; padding: 10px; text-align: right;">PU</th>
+            <th style="border: 1px solid #ddd; padding: 10px; text-align: right;">Montant</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Ligne 1 -->
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;"><strong>OPÉRATION DU FÉMUR</strong></td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;"></td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: right;"></td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: right;"></td>
+          </tr>
+          <!-- Consultation initiale -->
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 10px; padding-left: 20px;">Consultation initiale du Médecin Généraliste</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">1</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: right;">330 TND</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: right;">495 TND</td>
+          </tr>
+          <!-- Frais d'hospitalisation -->
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 10px; padding-left: 20px;">Frais d'Hospitalisation</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">7/j</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: right;">11 880 TND</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: right;">12 540 TND</td>
+          </tr>
+          <!-- Intervention chirurgicale -->
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 10px; padding-left: 20px;">Intervention Chirurgicale</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">1</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: right;">16 500 TND</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: right;">16 665 TND</td>
+          </tr>
+          <!-- Rédication -->
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 10px; padding-left: 20px;">Rédication par séance</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">5</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: right;">(132) 660 TND</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: right;">660 TND</td>
+          </tr>
+          <!-- Consultation de suivi -->
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 10px; padding-left: 20px;">Consultation de Suivi</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">7</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: right;">1 155 TND</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: right;">1 155 TND</td>
+          </tr>
+          <!-- Chambre -->
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 10px; padding-left: 20px;">Chambre</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">10/j</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: right;">1 650 TND</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: right;">1 650 TND</td>
+          </tr>
+          <!-- Total général -->
+          <tr style="background-color: #f9f9f9;">
+            <td colspan="3" style="border: 1px solid #ddd; padding: 10px; text-align: right;"><strong>TOTAL GÉNÉRAL</strong></td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: right;"><strong>33 165 TND</strong></td>
+          </tr>
+          <!-- Remise assurance -->
+          <tr style="background-color: #f0f8f0;">
+            <td colspan="3" style="border: 1px solid #ddd; padding: 10px; text-align: right;"><strong>REMISE ASSURANCE DE PRISE EN CHARGE</strong></td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: right;"><strong>100 %</strong></td>
+          </tr>
+          <!-- Net à payer -->
+          <tr style="background-color: #e8f4e8;">
+            <td colspan="3" style="border: 1px solid #ddd; padding: 10px; text-align: right;"><strong>NET À PAYER</strong></td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: right;"><strong>33 165 TND</strong></td>
+          </tr>
+          <!-- Mode de paiement -->
+          <tr>
+            <td colspan="4" style="border: 1px solid #ddd; padding: 10px; text-align: center; font-style: italic;">
+              Payé par : CB
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- <p><strong>Montant total:</strong> {{ facture?.Montant | currency:'TND' }}</p> -->
+  </div>
+</div>
+    <!-- Étape 4: Paiement -->
+ <div *ngIf="etapeActuelle === EtapeProcess.Paiement" class="etape-container">
+  <!-- <h3>la Facture</h3>
+  
+  <div class="summary">
+    <h4>Récapitulatif</h4>
+    <p><strong>Adhérent:</strong> {{ adherentSelectionne?.Nom }} {{ adherentSelectionne?.Prenom }}</p>
+    <p><strong>Plan:</strong> {{ planSelectionne?.Libelle }}</p>
+    <p><strong>Montant total:</strong> {{ facture?.Montant | currency:'EUR' }}</p>
+    <p><strong>Numéro de facture:</strong> {{ facture?.Numero }}</p>
+    <p><strong>Date de création:</strong> {{ facture?.DateEmission | date:'dd/MM/yyyy' }}</p>
+    <p><strong></strong> </p>
+    <p><strong>Statut:</strong> 
+      <span [ngClass]="{
+        'text-success': facture?.Statut === 2, 
+        'text-warning': facture?.Statut === 0 || facture?.Statut === 1
+      }">
+        {{ getStatutFactureText(facture?.Statut) }}
+      </span>
+      
+    </p>
+  </div> -->
+
+  <!-- REMPLACEZ le formulaire par un simple bouton -->
+  <div class="payment-actions">
+    <!-- <button (click)="effectuerPaiementAutomatique()" class="btn btn-success btn-lg" [disabled]="isLoading">
+      <i class="nc-icon nc-credit-card"></i>
+      {{ isLoading ? 'Traitement du paiement...' : 'Payer ' + (facture?.Montant | currency:'EUR') }}
+    </button> -->
+    
+    <button (click)="etapeActuelle = EtapeProcess.Reclamation" class="btn btn-outline-secondary">
+      Passer au suivant
+    </button>
+  </div>
+</div>
+
+<!-- Ajoutez cette étape après le paiement -->
+<!-- Étape Réclamation - Indépendante du paiement -->
+<div *ngIf="etapeActuelle === EtapeProcess.Reclamation" class="etape-container">
+  <h3>Déposer une Réclamation (Optionnel)</h3>
+  
+  <div class="reclamation-options">
+    <div class="option-card">
+      <h4> Souhaitez-vous déposer une réclamation ?</h4>
+      <p>Vous pouvez déposer une réclamation maintenant ou passer directement à la confirmation.</p>
+      
+      <div class="option-buttons">
+        <button class="btn btn-info" (click)="showReclamationForm = true">
+           Oui, déposer une réclamation
+        </button>
+        <button class="btn btn-outline-secondary" (click)="passerAConfirmation()">
+           Non, passer à la confirmation
+        </button>
+      </div>
+    </div>
+
+    <!-- Formulaire de réclamation (masqué par défaut) -->
+    <div *ngIf="showReclamationForm" class="reclamation-form-section">
+      <app-reclamation-form 
+        [adherentId]="selectionForm.value.adherentId"
+        (reclamationCree)="onReclamationCree($event)">
+      </app-reclamation-form>
+    </div>
+  </div>
+
+  <div class="navigation-buttons">
+    <!-- <button class="btn btn-secondary" (click)="etapeActuelle = EtapeProcess.Paiement">
+      ← Retour au paiement
+    </button> -->
+    <!-- <button *ngIf="!showReclamationForm" class="btn btn-primary" (click)="passerAConfirmation()">
+      Terminer le processus ✓
+    </button> -->
+  </div>
+</div>
+    <!-- Étape 5: Confirmation -->
+    <div *ngIf="etapeActuelle === EtapeProcess.Confirmation" class="etape-container confirmation">
+      <h3>✅ Processus Terminé avec Succès!</h3>
+      
+      <div class="confirmation-details">
+        <h4>Détails de la transaction</h4>
+        <p><strong>Numéro de facture:</strong> {{ facture?.numero }}</p>
+        <p><strong>Montant payé:</strong> {{ paiementForm.value.montant | currency:'EUR' }}</p>
+        <p><strong>Méthode:</strong> 
+          {{ paiementForm.value.methode === '0' ? 'Carte Bancaire' : 
+             paiementForm.value.methode === '1' ? 'Virement' :
+             paiementForm.value.methode === '2' ? 'Espèces' : 'Chèque' }}
+        </p>
+      </div>
+
+      <button class="btn btn-primary" (click)="recommencer()">
+        Démarrer une nouvelle adhésion
+      </button>
+    </div>
+
+    <!-- Erreur -->
+    <!-- <div *ngIf="erreur" class="alert alert-danger">
+      {{ erreur }}
+    </div>
+  </div> -->
+</div>

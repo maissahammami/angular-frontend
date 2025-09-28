@@ -1,0 +1,168 @@
+.assigner-medecin-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+
+  .header {
+    text-align: center;
+    margin-bottom: 30px;
+
+    h3 {
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    p {
+      color: #666;
+      margin: 0;
+    }
+  }
+
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: #007bff;
+
+    .spinner-border {
+      margin-bottom: 15px;
+    }
+  }
+
+  .assigner-form {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+
+    .form-group {
+      margin-bottom: 25px;
+
+      label {
+        font-weight: bold;
+        color: #495057;
+        margin-bottom: 8px;
+        display: block;
+      }
+
+      .form-control {
+        border-radius: 6px;
+        border: 2px solid #e9ecef;
+        padding: 12px;
+        transition: border-color 0.3s ease;
+
+        &:focus {
+          border-color: #007bff;
+          box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+        }
+      }
+    }
+
+    .medecins-list {
+      margin-top: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 6px;
+
+      h5 {
+        color: #495057;
+        margin-bottom: 15px;
+      }
+
+      .medecin-card {
+        background: white;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        border-left: 4px solid #28a745;
+
+        .medecin-info {
+          strong {
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
+          }
+
+          .specialite {
+            color: #007bff;
+            font-weight: 500;
+            margin-right: 15px;
+          }
+
+          .numero-ordre {
+            color: #6c757d;
+            margin-right: 15px;
+          }
+
+          .email {
+            color: #6c757d;
+            font-size: 0.9em;
+          }
+        }
+      }
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+
+      .btn {
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: 500;
+
+        &:disabled {
+          opacity: 0.6;
+        }
+      }
+    }
+  }
+
+  .no-medecins {
+    text-align: center;
+    padding: 40px;
+
+    .alert {
+      max-width: 500px;
+      margin: 0 auto;
+      border-radius: 8px;
+
+      i {
+        font-size: 2rem;
+        margin-bottom: 15px;
+        display: block;
+        color: #ffc107;
+      }
+
+      h4 {
+        color: #856404;
+        margin-bottom: 10px;
+      }
+
+      p {
+        color: #856404;
+        margin: 5px 0;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .assigner-medecin-container {
+    padding: 15px;
+
+    .assigner-form {
+      padding: 20px;
+
+      .form-actions {
+        flex-direction: column;
+        
+        .btn {
+          width: 100%;
+          margin-bottom: 10px;
+        }
+      }
+    }
+  }
+}
