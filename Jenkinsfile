@@ -2,24 +2,23 @@ pipeline {
     agent any
     
     stages {
-        stage('Setup') {
+        stage('Check Environment') {
             steps {
+                sh 'echo "Building Angular with system Node.js..."'
                 sh 'node --version'
                 sh 'npm --version'
+                sh 'pwd'
+                sh 'ls -la'
             }
         }
         
         stage('Install Dependencies') {
             steps {
-                sh '''
-                # Use local cache directory to avoid permission issues
-                mkdir -p .npm-cache
-                npm install --legacy-peer-deps --cache .npm-cache --no-optional
-                '''
+                sh 'npm install --legacy-peer-deps --cache ./.npm-cache'
             }
         }
         
-        stage('Build') {
+        stage('Build Angular') {
             steps {
                 sh 'npm run build -- --configuration=production'
             }
@@ -28,7 +27,14 @@ pipeline {
         stage('Archive') {
             steps {
                 archiveArtifacts artifacts: 'dist/**/*', fingerprint: true
+                echo '🎉 ANGULAR FRONTEND PIPELINE SUCCESSFUL!'
             }
+        }
+    }
+    
+    post {
+        always {
+            cleanWs()
         }
     }
 }
