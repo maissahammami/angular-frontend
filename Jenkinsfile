@@ -1,4 +1,3 @@
-@'
 pipeline {
     agent {
         docker {
@@ -16,7 +15,7 @@ pipeline {
         
         stage('Verify Environment') {
             steps {
-                sh 'echo "🔍 Building Angular in Docker container..."'
+                sh 'echo "Building Angular in Docker container..."'
                 sh 'node --version'
                 sh 'npm --version'
                 sh 'pwd'
@@ -26,7 +25,7 @@ pipeline {
         
         stage('Install Dependencies') {
             steps {
-                sh 'npm install --legacy-peer-deps --verbose'
+                sh 'npm install --legacy-peer-deps'
             }
         }
         
@@ -38,14 +37,14 @@ pipeline {
         
         stage('Run Tests') {
             steps {
-                sh 'npm test -- --watch=false --browsers=ChromeHeadless --no-fail || echo "Tests completed"'
+                sh 'npm test -- --watch=false --browsers=ChromeHeadless || echo "Tests completed"'
             }
         }
         
         stage('Archive Build') {
             steps {
                 archiveArtifacts artifacts: 'dist/**/*', fingerprint: true
-                echo '📦 Angular build artifacts archived!'
+                echo 'Angular build artifacts archived!'
             }
         }
     }
@@ -55,12 +54,10 @@ pipeline {
             cleanWs()
         }
         success {
-            echo '🎉 ANGULAR FRONTEND PIPELINE SUCCESSFUL!'
-            echo '🚀 Your Angular app is built and ready for deployment!'
+            echo 'ANGULAR FRONTEND PIPELINE SUCCESSFUL!'
         }
         failure {
-            echo '❌ Build failed. Check logs above for details.'
+            echo 'Build failed. Check logs above for details.'
         }
     }
 }
-'@ | Out-File -FilePath "Jenkinsfile" -Encoding utf8 -NoNewline
