@@ -2,50 +2,25 @@ pipeline {
     agent {
         docker {
             image 'node:18-alpine'
-            args '-v /var/jenkins_home:/workspace --user root'
+            args '--user 0'  // Run as root
         }
     }
-    
     stages {
-        stage('Checkout') {
+        stage('Fix npm cache') {
             steps {
-                checkout scm
+                sh 'npm cache clean --force'
             }
         }
-        
-        stage('Fix npm permissions') {
-            steps {
-                sh '''
-                # Fix npm cache permissions
-                mkdir -p /workspace/.npm
-                chmod -R 777 /workspace/.npm
-                npm config set cache /workspace/.npm
-                '''
-            }
-        }
-        
-        stage('Install Dependencies') {
+        stage('Install & Build') {
             steps {
                 sh 'npm install --legacy-peer-deps --unsafe-perm'
-            }
-        }
-        
-        stage('Build Angular') {
-            steps {
                 sh 'npm run build -- --configuration=production'
             }
         }
-        
         stage('Archive') {
             steps {
                 archiveArtifacts artifacts: 'dist/**/*', fingerprint: true
             }
-        }
-    }
-    
-    post {
-        always {
-            cleanWs()
         }
     }
 }
