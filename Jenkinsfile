@@ -2,8 +2,13 @@ pipeline {
     agent {
         docker {
             image 'node:18-alpine'
-            args '-v /var/jenkins_home:/workspace'
+            args '-v /var/jenkins_home:/workspace --user root'
         }
+    }
+    
+    environment {
+        // Set npm cache to workspace directory
+        NPM_CONFIG_CACHE = '/workspace/.npm'
     }
     
     stages {
@@ -13,19 +18,24 @@ pipeline {
             }
         }
         
-        stage('Verify Environment') {
+        stage('Setup npm') {
             steps {
-                sh 'echo "Building Angular in Docker container..."'
+                sh '''
+                echo "Setting up npm permissions..."
+                # Fix npm permissions
+                npm config set cache /workspace/.npm --global
+                npm config set prefix /workspace/.npm --global
+                # Clear any root-owned files
+                rm -rf /root/.npm
+                '''
                 sh 'node --version'
                 sh 'npm --version'
-                sh 'pwd'
-                sh 'ls -la'
             }
         }
         
         stage('Install Dependencies') {
             steps {
-                sh 'npm install --legacy-peer-deps'
+                sh 'npm install --legacy-peer-deps --cache /workspace/.npm'
             }
         }
         
