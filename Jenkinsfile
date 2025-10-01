@@ -1,26 +1,39 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:18-alpine'
-            args '--user 0'  // Run as root
-        }
-    }
+    agent any
+    
     stages {
-        stage('Fix npm cache') {
+        stage('Check Environment') {
             steps {
-                sh 'npm cache clean --force'
+                sh 'echo "Node.js is installed - building Angular..."'
+                sh 'node --version'
+                sh 'npm --version'
+                sh 'pwd'
             }
         }
-        stage('Install & Build') {
+        
+        stage('Install Dependencies') {
             steps {
-                sh 'npm install --legacy-peer-deps --unsafe-perm'
+                sh 'npm install --legacy-peer-deps --prefix ./node_modules --cache ./.npm-cache'
+            }
+        }
+        
+        stage('Build Angular') {
+            steps {
                 sh 'npm run build -- --configuration=production'
             }
         }
+        
         stage('Archive') {
             steps {
                 archiveArtifacts artifacts: 'dist/**/*', fingerprint: true
+                echo '🎉 ANGULAR FRONTEND PIPELINE SUCCESSFUL!'
             }
+        }
+    }
+    
+    post {
+        always {
+            cleanWs()
         }
     }
 }
