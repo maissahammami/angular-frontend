@@ -1,9 +1,53 @@
+// pipeline {
+//     agent any
+    
+//     stages {
+//         stage('Check Environment') {
+//             steps {
+//                 sh 'echo "Building Angular with system Node.js..."'
+//                 sh 'node --version'
+//                 sh 'npm --version'
+//             }
+//         }
+        
+//         stage('Install Dependencies') {
+//             steps {
+//                 sh 'npm install --legacy-peer-deps --cache ./.npm-cache'
+//             }
+//         }
+        
+//         stage('Build Angular') {
+//             steps {
+//                 // Continue build even with warnings
+//                 sh 'npm run build -- --configuration=production || echo "Build completed with warnings"'
+//             }
+//         }
+        
+//         stage('Archive') {
+//             steps {
+//                 script {
+//                     // Only archive if dist folder was created
+//                     if (fileExists('dist')) {
+//                         archiveArtifacts artifacts: 'dist/**/*', fingerprint: true
+//                         echo '🎉 ANGULAR FRONTEND PIPELINE SUCCESSFUL!'
+//                     } else {
+//                         echo '❌ Build failed - dist folder not created'
+//                     }
+//                 }
+//             }
+//         }
+//     }
+    
+//     post {
+//         always {
+//             cleanWs()
+//         }
+//     }
+// }
+
+
 pipeline {
     agent any
-    
-    tools {
-        nodejs 'node'  // Define Node.js tool if configured in Jenkins
-    }
     
     stages {
         stage('Check Environment') {
@@ -11,13 +55,13 @@ pipeline {
                 sh 'echo "Building Angular with system Node.js..."'
                 sh 'node --version'
                 sh 'npm --version'
-                sh 'ng version || echo "Angular CLI not available globally"'
+                sh 'npx ng version || echo "Angular CLI available via npx"'
             }
         }
         
         stage('Install Dependencies') {
             steps {
-                sh 'npm ci --legacy-peer-deps --cache ./.npm-cache'  // Use npm ci for cleaner installs
+                sh 'npm install --legacy-peer-deps --cache ./.npm-cache'
             }
         }
         
@@ -25,14 +69,13 @@ pipeline {
             steps {
                 script {
                     // Build with proper error handling
-                    def buildResult = sh(
-                        script: 'npm run build -- --configuration=production',
-                        returnStatus: true
-                    )
-                    
-                    if (buildResult != 0) {
-                        echo "Build completed with warnings or errors (exit code: ${buildResult})"
-                        // Continue anyway for warnings, fail for critical errors if needed
+                    try {
+                        sh 'npm run build -- --configuration=production'
+                        echo '✅ Build completed successfully'
+                    } catch (Exception e) {
+                        echo '⚠️ Build completed with warnings or errors'
+                        // Uncomment the next line if you want to fail the build on errors:
+                        // error 'Build failed with errors'
                     }
                 }
             }
@@ -40,7 +83,15 @@ pipeline {
         
         stage('Run Tests') {
             steps {
-                sh 'npm test -- --watch=false --browsers=ChromeHeadless || echo "Tests completed with warnings"'
+                script {
+                    try {
+                        sh 'npm test -- --watch=false --browsers=ChromeHeadless'
+                        echo '✅ Tests completed successfully'
+                    } catch (Exception e) {
+                        echo '⚠️ Tests completed with warnings'
+                        // Continue build even if tests have warnings
+                    }
+                }
             }
         }
         
@@ -49,8 +100,6 @@ pipeline {
                 script {
                     if (fileExists('dist')) {
                         archiveArtifacts artifacts: 'dist/**/*', fingerprint: true
-                        // Also consider storing build info
-                        sh 'echo "Build: ${BUILD_NUMBER} - ${env.BUILD_URL}" > dist/build-info.txt'
                         echo '🎉 ANGULAR FRONTEND PIPELINE SUCCESSFUL!'
                     } else {
                         error '❌ Build failed - dist folder not created'
@@ -61,31 +110,30 @@ pipeline {
     }
     
     post {
-        success {
-            emailext (
-                subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-                body: "Build successful! Check console output at ${env.BUILD_URL}",
-                to: "${env.BUILD_USER_EMAIL}"
-            )
-        }
-        failure {
-            emailext (
-                subject: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-                body: "Build failed! Check console output at ${env.BUILD_URL}",
-                to: "${env.BUILD_USER_EMAIL}"
-            )
-        }
         always {
             cleanWs()
-            script {
-                // Cleanup npm cache periodically
-                sh 'npm cache clean --force || true'
-            }
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+            // Optional: Add email notification here if configured
+            // emailext (
+            //     subject: "SUCCESS: Frontend Build ${env.BUILD_NUMBER}",
+            //     body: "Build successful!\nCheck: ${env.BUILD_URL}",
+            //     to: 'team@example.com'
+            // )
+        }
+        failure {
+            echo 'Pipeline failed!'
+            // Optional: Add email notification here if configured
+            // emailext (
+            //     subject: "FAILED: Frontend Build ${env.BUILD_NUMBER}",
+            //     body: "Build failed!\nCheck: ${env.BUILD_URL}",
+            //     to: 'team@example.com'
+            // )
         }
     }
     
     options {
         timeout(time: 30, unit: 'MINUTES')
-        buildDiscarder(logRotator(numToKeepStr: '10'))
     }
 }
