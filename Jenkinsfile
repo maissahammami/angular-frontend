@@ -1,49 +1,49 @@
-pipeline {
-    agent any
+// pipeline {
+//     agent any
     
-    stages {
-        stage('Check Environment') {
-            steps {
-                sh 'echo "Building Angular with system Node.js..."'
-                sh 'node --version'
-                sh 'npm --version'
-            }
-        }
+//     stages {
+//         stage('Check Environment') {
+//             steps {
+//                 sh 'echo "Building Angular with system Node.js..."'
+//                 sh 'node --version'
+//                 sh 'npm --version'
+//             }
+//         }
         
-        stage('Install Dependencies') {
-            steps {
-                sh 'npm install --legacy-peer-deps --cache ./.npm-cache'
-            }
-        }
+//         stage('Install Dependencies') {
+//             steps {
+//                 sh 'npm install --legacy-peer-deps --cache ./.npm-cache'
+//             }
+//         }
         
-        stage('Build Angular') {
-            steps {
-                // Continue build even with warnings
-                sh 'npm run build -- --configuration=production || echo "Build completed with warnings"'
-            }
-        }
+//         stage('Build Angular') {
+//             steps {
+//                 // Continue build even with warnings
+//                 sh 'npm run build -- --configuration=production || echo "Build completed with warnings"'
+//             }
+//         }
         
-        stage('Archive') {
-            steps {
-                script {
-                    // Only archive if dist folder was created
-                    if (fileExists('dist')) {
-                        archiveArtifacts artifacts: 'dist/**/*', fingerprint: true
-                        echo '🎉 ANGULAR FRONTEND PIPELINE SUCCESSFUL!'
-                    } else {
-                        echo '❌ Build failed - dist folder not created'
-                    }
-                }
-            }
-        }
-    }
+//         stage('Archive') {
+//             steps {
+//                 script {
+//                     // Only archive if dist folder was created
+//                     if (fileExists('dist')) {
+//                         archiveArtifacts artifacts: 'dist/**/*', fingerprint: true
+//                         echo '🎉 ANGULAR FRONTEND PIPELINE SUCCESSFUL!'
+//                     } else {
+//                         echo '❌ Build failed - dist folder not created'
+//                     }
+//                 }
+//             }
+//         }
+//     }
     
-    post {
-        always {
-            cleanWs()
-        }
-    }
-}
+//     post {
+//         always {
+//             cleanWs()
+//         }
+//     }
+// }
 
 
 // pipeline {
@@ -140,34 +140,34 @@ pipeline {
 
 
 
-// pipeline {
-//     agent any
+pipeline {
+    agent any
     
-//     environment {
-//         DOCKER_REGISTRY = 'your-dockerhub-username'
-//     }
+    environment {
+        DOCKER_REGISTRY = 'your-dockerhub-username'
+    }
     
-//     stages {
-//         stage('Build Docker Image') {
-//             steps {
-//                 script {
-//                     docker.build("${env.DOCKER_REGISTRY}/assurance-frontend:${env.BUILD_ID}")
-//                 }
-//             }
-//         }
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${env.DOCKER_REGISTRY}/assurance-frontend:${env.BUILD_ID}")
+                }
+            }
+        }
         
-//         stage('Push to Registry') {
-//             when {
-//                 branch 'main'
-//             }
-//             steps {
-//                 script {
-//                     docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
-//                         docker.image("${env.DOCKER_REGISTRY}/assurance-frontend:${env.BUILD_ID}").push()
-//                         docker.image("${env.DOCKER_REGISTRY}/assurance-frontend:latest").push()
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
+        stage('Push to Registry') {
+            when {
+                branch 'main'
+            }
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
+                        docker.image("${env.DOCKER_REGISTRY}/assurance-frontend:${env.BUILD_ID}").push()
+                        docker.image("${env.DOCKER_REGISTRY}/assurance-frontend:latest").push()
+                    }
+                }
+            }
+        }
+    }
+}
