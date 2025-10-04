@@ -286,13 +286,13 @@
       
       <div class="confirmation-details">
         <h4>Détails de la transaction</h4>
-        <p><strong>Numéro de facture:</strong> {{ facture?.numero }}</p>
-        <p><strong>Montant payé:</strong> {{ paiementForm.value.montant | currency:'EUR' }}</p>
-        <p><strong>Méthode:</strong> 
+        <p><strong>Numéro de facture:</strong> {{ facture?.Numero }}</p>
+        <!-- <p><strong>Montant payé:</strong> {{ paiementForm.value.montant | currency:'EUR' }}</p> -->
+        <!-- <p><strong>Méthode:</strong> 
           {{ paiementForm.value.methode === '0' ? 'Carte Bancaire' : 
              paiementForm.value.methode === '1' ? 'Virement' :
              paiementForm.value.methode === '2' ? 'Espèces' : 'Chèque' }}
-        </p>
+        </p> -->
       </div>
 
       <button class="btn btn-primary" (click)="recommencer()">
